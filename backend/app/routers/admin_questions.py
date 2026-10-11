@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
-
+from sqlalchemy import select, func
 from ..auth import require_admin
 from ..database import get_db
 from ..models import Question, Option, Answer, User
@@ -30,6 +30,18 @@ def create_question(
     db: Session = Depends(get_db),
     admin: User = Depends(require_admin),
 ):
+    active_count = db.scalar(
+        select(func.count(Question.id)).where(
+            Question.is_active.is_(True)
+    )
+    ) or 0
+
+    if active_count >= 10:
+      raise HTTPException(
+        status_code=409,
+        detail="Maximum of 10 active questions allowed",
+    )
+
     question = Question(
         text=payload.text,
         is_active=True,
