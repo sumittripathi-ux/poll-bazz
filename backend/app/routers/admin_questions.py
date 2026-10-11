@@ -36,7 +36,7 @@ def create_question(
     )
     ) or 0
 
-    if active_count >= 10:
+    if active_count >= 50:
       raise HTTPException(
         status_code=409,
         detail="Maximum of 10 active questions allowed",
